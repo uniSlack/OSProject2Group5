@@ -8,6 +8,7 @@
 extern "C" 
 {
 #include <dyn_array.h>
+
 }
 
 
@@ -34,6 +35,12 @@ class GradeEnvironment : public testing::Environment
         }
 };
 
+TEST (load_process_control_blocks, NullInputFilename) {
+    const char *input_filename = NULL;
+    dyn_array_t* res = load_process_control_blocks(input_filename);
+    dyn_array_t* temp = NULL;
+    EXPECT_EQ(res, temp);
+}
 
 int main(int argc, char **argv) 
 {
