@@ -42,14 +42,29 @@ TEST (load_process_control_blocks, NullInputFilename) {
     EXPECT_EQ(res, temp);
 }
 
-TEST (load_process_control_blocks, GoodReadHasContent) {
+TEST (load_process_control_blocks, GoodRead) {
     const char *input_filename = "testData.bin";
     FILE* f = fopen(input_filename, "wb");
-    int32_t arr[4] = {1, 5, 6, 7};
-    size_t wroteOut = fwrite(arr,sizeof(int32_t), 4, f);
+
+    int numPCBs = 10;
+    ProcessControlBlock_t pcb[numPCBs]; 
+
+    int32_t arr[1] = {numPCBs};
+    size_t wroteOut = fwrite(arr, sizeof(int32_t), 1, f);     
+
+    for(int i = 0; i < numPCBs; i++){
+        pcb[i].arrival = i;
+        pcb[i].priority = i;
+        pcb[i].remaining_burst_time = i;
+        pcb[i].started = false;
+    }
+
+    wroteOut += fwrite(pcb, sizeof(ProcessControlBlock_t), numPCBs, f); // writes out array of pcbs
     fclose(f);
+
     dyn_array_t* res = load_process_control_blocks(input_filename);
-    EXPECT_EQ(wroteOut, 4);
+
+    EXPECT_EQ(wroteOut, 1 + numPCBs);
     EXPECT_EQ(dyn_array_empty(res), false);
     EXPECT_FALSE(res == NULL);
 }
