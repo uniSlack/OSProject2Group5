@@ -81,7 +81,7 @@ dyn_array_t *load_process_control_blocks(const char *input_file)
                    if(fread(pcb, sizeof(int32_t), 3, f) != 3) {                             // read in pcb to temp var
                         return NULL;                                                        // error clause
                    }    
-                    dyn_array_push_front(da, pcb);                                          // else save, bug?
+                    dyn_array_push_front(da, pcb);                                          // else save
                 }
                 return da;
             }
