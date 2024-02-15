@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.5)
 
 # ALL OF THE SPECIFIED NAMES IN THIS CMAKE ARE REQUIRED.
 # Set the project name variable to assignment3.
@@ -12,21 +12,25 @@ project(hw2)
 set(CMAKE_C_FLAGS "-std=c11 -Wall -Wextra -Wshadow -Werror")
 set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wextra -Wshadow -Werror")
 
+#GoogleTest requires at least C++14
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 # Add our include directory to CMake's search paths.
 # THIS IS REQUIRED
-
+include_directories(include)
 
 # Create library from dyn_array so we can use it later.
-
+add_library(dyn_array src/dyn_array.c)
 
 # Compile the analysis executable.
-
+add_executable(analysis src/analysis.c)
 
 # link the dyn_array library we compiled against our analysis executable.
-
+target_link_libraries(analysis dyn_array)
 
 # Compile the the tester executable.
-add_executable(${PROJECT_NAME}_test ......)
+add_executable(${PROJECT_NAME}_test test/tests.cpp src/process_scheduling.c)
 
 target_compile_definitions(${PROJECT_NAME}_test PRIVATE)
 
