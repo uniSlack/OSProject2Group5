@@ -74,14 +74,15 @@ dyn_array_t *load_process_control_blocks(const char *input_file)
         FILE* f = fopen(input_file, "rb");
         if(f){
             int32_t numPCBs = 0;
-            if(fread(&numPCBs, sizeof(int32_t), 1, f) == 1) {                               // get num pcbs
-                dyn_array_t* da = dyn_array_create(numPCBs, sizeof(int32_t), NULL);         // set up array
-                for(int i = 0; i < numPCBs; i++){                                           // for each expected pcb...
-                   ProcessControlBlock_t* pcb = NULL;
-                   if(fread(pcb, sizeof(int32_t), 3, f) != 3) {                             // read in pcb to temp var
-                        return NULL;                                                        // error clause
+            if(fread(&numPCBs, sizeof(int32_t), 1, f) == 1) {                                   // get num pcbs
+                dyn_array_t* da = dyn_array_create(numPCBs, sizeof(int32_t), NULL);             // set up array
+                for(int i = 0; i < numPCBs; i++){                                               // for each expected pcb...
+                    ProcessControlBlock_t* pcb = malloc(sizeof(ProcessControlBlock_t));         // Create heap var
+                    if(fread(pcb, sizeof(int32_t), 3, f) != 3) {                                // read in pcb to heap var
+                        free(pcb);
+                        return NULL;                                                            // error clause
                     }    
-                    dyn_array_push_front(da, pcb);                                          // else save
+                    dyn_array_push_front(da, pcb);                                              // else save
                 }
                 return da;
             }

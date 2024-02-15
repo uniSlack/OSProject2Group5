@@ -42,6 +42,18 @@ TEST (load_process_control_blocks, NullInputFilename) {
     EXPECT_EQ(res, temp);
 }
 
+TEST (load_process_control_blocks, GoodReadHasContent) {
+    const char *input_filename = "testData.bin";
+    FILE* f = fopen(input_filename, "wb");
+    int32_t arr[4] = {1, 5, 6, 7};
+    size_t wroteOut = fwrite(arr,sizeof(int32_t), 4, f);
+    fclose(f);
+    dyn_array_t* res = load_process_control_blocks(input_filename);
+    EXPECT_EQ(wroteOut, 4);
+    EXPECT_EQ(dyn_array_empty(res), false);
+    EXPECT_FALSE(res == NULL);
+}
+
 int main(int argc, char **argv) 
 {
     ::testing::InitGoogleTest(&argc, argv);
