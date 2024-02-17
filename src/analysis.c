@@ -26,7 +26,7 @@ int main(int argc, char **argv)
     // long quantum = 0;
     // if (argc > 3) 
     // {
-    //     quantum = atol(argv[3]);
+    //     sscanf(argv[3], "%ld", &quantum);
     // }
 
     dyn_array_t *pcb = load_process_control_blocks(pcb_file);
@@ -34,7 +34,11 @@ int main(int argc, char **argv)
 
     if (strncmp(schedule_algorithm, FCFS, 4) == 0) 
     {
-        if (!first_come_first_serve(pcb, result)) printf("First-come-first-serve failed!\n");
+        if (!first_come_first_serve(pcb, result)) 
+        {
+            printf("First-come-first-serve failed!\n");
+            return EXIT_FAILURE;
+        }
     }
     else if (strncmp(schedule_algorithm, P, 4) == 0) 
     {
@@ -55,8 +59,11 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    printf("avg turnaround time: %f, avg waiting time: %f, total runtime: %lu\n", result->average_turnaround_time, result->average_waiting_time, result->total_run_time);
-
+    printf("Average Waiting Time: %f\nAverage Turnaround Time: %f\nTotal Clock Time: %lu\n",
+        result->average_waiting_time, 
+        result->average_turnaround_time, 
+        result->total_run_time);
+        
     free(result);
 
     return EXIT_SUCCESS;
