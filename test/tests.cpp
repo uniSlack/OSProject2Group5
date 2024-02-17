@@ -44,6 +44,56 @@ TEST (load_process_control_blocks, GoodRead) {
     EXPECT_FALSE(res == NULL);
 }
 
+TEST (first_come_first_serve, LoadAndSort) {
+    const char *input_filename = "testData.bin";
+    FILE* f = fopen(input_filename, "wb");
+
+    int numPCBs = 10;
+    ProcessControlBlock_t pcb[numPCBs]; 
+
+    int32_t arr[1] = {numPCBs};
+    size_t wroteOut = fwrite(arr, sizeof(int32_t), 1, f);     
+
+    for(int i = 0; i < numPCBs; i++){
+        pcb[i].arrival = (i%3==0) ? i+2 : i;
+        pcb[i].priority = i;
+        pcb[i].remaining_burst_time = i;
+        pcb[i].started = false;
+    }
+
+    wroteOut += fwrite(pcb, sizeof(ProcessControlBlock_t), numPCBs, f); // writes out array of pcbs
+    fclose(f);
+
+    dyn_array_t* pcbs = load_process_control_blocks(input_filename);
+    ScheduleResult_t * FCFS_result = (ScheduleResult_t *)malloc(sizeof(ScheduleResult_t));  
+
+    //sort and get results from FCFS
+    bool validFCFS = first_come_first_serve(pcbs, FCFS_result);
+
+    int totalTime = ((ProcessControlBlock_t *)dyn_array_at(pcbs,0))->remaining_burst_time; // Initialize time since we dont add 0
+
+    //loop through the pcbs to make sure they are sorted and get total time
+    for(int i = 1; i < numPCBs; i++){
+        ProcessControlBlock_t *pcb_at_index = (ProcessControlBlock_t *)dyn_array_at(pcbs,i);
+        ProcessControlBlock_t *pcb_at_prev_index = (ProcessControlBlock_t *)dyn_array_at(pcbs,i-1);
+        totalTime += pcb_at_index->remaining_burst_time;
+
+        //If sorted worked then all arrival times should go from lowest -> highest
+        EXPECT_GE(pcb_at_index->arrival, pcb_at_prev_index->arrival);
+    }
+
+    EXPECT_TRUE(validFCFS);
+    EXPECT_EQ(FCFS_result->total_run_time, totalTime);
+    EXPECT_EQ(wroteOut, 1 + numPCBs);
+    EXPECT_EQ(dyn_array_empty(pcbs), false);
+    EXPECT_FALSE(pcbs == NULL);
+}
+
+TEST (first_come_first_serve, NULL_queue) {
+    ScheduleResult_t * FCFS_result = (ScheduleResult_t *)malloc(sizeof(ScheduleResult_t));  
+    bool validFCFS = first_come_first_serve(NULL, FCFS_result);
+    EXPECT_FALSE(validFCFS);
+}
 int main(int argc, char **argv) 
 {
     ::testing::InitGoogleTest(&argc, argv);

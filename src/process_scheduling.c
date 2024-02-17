@@ -44,7 +44,6 @@ bool first_come_first_serve(dyn_array_t *ready_queue, ScheduleResult_t *result)
     result->total_run_time = 0;
     unsigned long currTime = 0;
 
-    //need to test
     //compares arrive time of pcbs and does a quick sort using that function
     if (!dyn_array_sort(ready_queue, compare_pcb_arrival))  return false;
 
@@ -53,7 +52,6 @@ bool first_come_first_serve(dyn_array_t *ready_queue, ScheduleResult_t *result)
 
         ProcessControlBlock_t *pcb_t = dyn_array_at(ready_queue, i); //Grab queue at index i
 
-        /****cant decide if this should be += or =  *****/
         result->average_waiting_time += currTime;
 
         result->average_turnaround_time += currTime + pcb_t->remaining_burst_time; // Calculates the total turnaround time for the current process
@@ -66,6 +64,8 @@ bool first_come_first_serve(dyn_array_t *ready_queue, ScheduleResult_t *result)
     // Calculate averages based on the total number of pcbs
     result->average_waiting_time /= dyn_array_size(ready_queue);
     result->average_turnaround_time /= dyn_array_size(ready_queue);
+
+    result->total_run_time = currTime;
 
     return true;
 }
@@ -126,15 +126,17 @@ dyn_array_t *load_process_control_blocks(const char *input_file)
         if(f){
             int32_t numPCBs = 0;
             if(fread(&numPCBs, sizeof(int32_t), 1, f) == 1) {                                   // get num pcbs
-                dyn_array_t* da = dyn_array_create(numPCBs, sizeof(int32_t), NULL);             // set up array
+                dyn_array_t* da = dyn_array_create(numPCBs, sizeof(ProcessControlBlock_t), NULL);             // set up array
                 for(int i = 0; i < numPCBs; i++){                                               // for each expected pcb...
                     ProcessControlBlock_t* pcb = malloc(sizeof(ProcessControlBlock_t));         // Create heap var
-                    if(fread(pcb, sizeof(int32_t), 3, f) != 3) {                                // read in pcb to heap var
+                    if(fread(pcb, sizeof(ProcessControlBlock_t), 1, f) != 1) {                                // read in pcb to heap var
                         free(pcb);
+                        fclose(f);
                         return NULL;                                                            // error clause
                     }    
-                    dyn_array_push_front(da, pcb);                                              // else save
+                    dyn_array_push_back(da, pcb);                                              // else save
                 }
+                fclose(f);
                 return da;
             }
         }
