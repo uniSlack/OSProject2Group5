@@ -21,12 +21,14 @@ include_directories(include)
 
 # Create library from dyn_array so we can use it later.
 add_library(dyn_array src/dyn_array.c)
+add_library(process_scheduling src/process_scheduling.c)
 
 # Compile the analysis executable.
 add_executable(analysis src/analysis.c)
 
 # link the dyn_array library we compiled against our analysis executable.
 target_link_libraries(analysis dyn_array)
+target_link_libraries(analysis process_scheduling)
 
 # Compile the the tester executable.
 add_executable(${PROJECT_NAME}_test test/tests.cpp src/process_scheduling.c)
