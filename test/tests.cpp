@@ -44,9 +44,9 @@ TEST (load_process_control_blocks, GoodRead) {
     EXPECT_FALSE(res == NULL);
 }
 
-int main() 
+int main(int argc, char **argv) 
 {
-    //::testing::InitGoogleTest(&argc, argv);
+    ::testing::InitGoogleTest(&argc, argv);
     //::testing::AddGlobalTestEnvironment(new GradeEnvironment);
     return RUN_ALL_TESTS();
 }
