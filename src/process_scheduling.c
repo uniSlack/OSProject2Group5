@@ -18,34 +18,44 @@ void virtual_cpu(ProcessControlBlock_t *process_control_block)
     --process_control_block->remaining_burst_time;
 }
 
+/// Comparator function for sorting pcbs based on arrival time
+int compare_pcb_arrival(const void *a, const void *b) {
+    const ProcessControlBlock_t *pcb_first = (const ProcessControlBlock_t *)a; //cast void pointers
+    const ProcessControlBlock_t *pcb_second = (const ProcessControlBlock_t *)b;
+
+    if (pcb_first->arrival > pcb_second->arrival) {    //pcb1 arrives after pcb2
+        return 1;
+    }
+     else {         //pcb2 arrives after or at the same time as pcb1 (sort not needed) 
+        return -1;
+    } 
+}
+
 bool first_come_first_serve(dyn_array_t *ready_queue, ScheduleResult_t *result) 
 {
     if (ready_queue == NULL || dyn_array_size(ready_queue) == 0) return false; //Check for bad data
 
-    //Initialize
     result->average_waiting_time = 0.0;
     result->average_turnaround_time = 0.0;
     result->total_run_time = 0;
     unsigned long currTime = 0;
 
-    //need to sort so the indexing during the for loop will be correct (this should be semi optimal size the function will still run of 0(N) as there are no embedded loops)
-    //I'm assuming this is done by using the dyn_array_sort
-    //but need to find or create a function to pass into it
+    //need to test
+    //compares arrive time of pcbs and does a quick sort using that function
+    if (!dyn_array_sort(ready_queue, compare_pcb_arrival))  return false;
 
     // Iterate through the processes in the pcbs and updates the result
     for (size_t i = 0; i < dyn_array_size(ready_queue); ++i) {
 
-        //Grab queue at index i
-        ProcessControlBlock_t *pcb_t = dyn_array_at(ready_queue, i);
+        ProcessControlBlock_t *pcb_t = dyn_array_at(ready_queue, i); //Grab queue at index i
 
         /****cant decide if this should be += or =  *****/
         result->average_waiting_time += currTime;
 
-        // Calculate the total turnaround time for the current process (dividing later to find average)
-        result->average_turnaround_time += currTime + pcb_t->remaining_burst_time;
+        result->average_turnaround_time += currTime + pcb_t->remaining_burst_time; // Calculates the total turnaround time for the current process
 
-        // Update current time to be the total run time
-        currTime += pcb_t->remaining_burst_time;
+        currTime += pcb_t->remaining_burst_time;    // Update current time to be the total run time
+
         pcb_t->started = true;
     }
 
@@ -54,9 +64,6 @@ bool first_come_first_serve(dyn_array_t *ready_queue, ScheduleResult_t *result)
     result->average_turnaround_time /= dyn_array_size(ready_queue);
 
     return true;
-    // UNUSED(ready_queue);
-    // UNUSED(result);
-    // return false;
 }
 
 bool shortest_job_first(dyn_array_t *ready_queue, ScheduleResult_t *result) 
