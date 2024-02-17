@@ -131,10 +131,12 @@ dyn_array_t *load_process_control_blocks(const char *input_file)
                     ProcessControlBlock_t* pcb = malloc(sizeof(ProcessControlBlock_t));         // Create heap var
                     if(fread(pcb, sizeof(int32_t), 3, f) != 3) {                                // read in pcb to heap var
                         free(pcb);
+                        fclose(f);
                         return NULL;                                                            // error clause
                     }    
                     dyn_array_push_front(da, pcb);                                              // else save
                 }
+                fclose(f);
                 return da;
             }
         }
