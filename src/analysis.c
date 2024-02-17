@@ -30,6 +30,12 @@ int main(int argc, char **argv)
     // }
 
     dyn_array_t *pcb = load_process_control_blocks(pcb_file);
+    if (pcb == NULL)
+    {
+        printf("Failed to load %s!\n", pcb_file);
+        return EXIT_FAILURE;
+    }
+
     ScheduleResult_t *result = malloc(sizeof(ScheduleResult_t));
 
     if (strncmp(schedule_algorithm, FCFS, 4) == 0) 
@@ -37,25 +43,38 @@ int main(int argc, char **argv)
         if (!first_come_first_serve(pcb, result)) 
         {
             printf("First-come-first-serve failed!\n");
+            free(pcb);
+            free(result);
             return EXIT_FAILURE;
         }
     }
-    else if (strncmp(schedule_algorithm, P, 4) == 0) 
+    else if (strncmp(schedule_algorithm, P, 1) == 0) 
     {
         printf("Priority is not implemented yet!\n");
+        free(pcb);
+        free(result);
+        return EXIT_FAILURE;
     }
-    else if (strncmp(schedule_algorithm, RR, 4) == 0) 
+    else if (strncmp(schedule_algorithm, RR, 2) == 0) 
     {
         printf("Round Robin is not implemented yet!\n");
+        free(pcb);
+        free(result);
+        return EXIT_FAILURE;
     }
-    else if (strncmp(schedule_algorithm, SJF, 4) == 0) 
+    else if (strncmp(schedule_algorithm, SJF, 3) == 0) 
     {
         printf("Shortest Job First is not implemented yet!\n");
+        free(pcb);
+        free(result);
+        return EXIT_FAILURE;
     }
     else 
     {
         printf("Invalid schedule algorithm!\n");
         printf("%s <pcb file> <schedule algorithm> [quantum]\n", argv[0]);
+        free(pcb);
+        free(result);
         return EXIT_FAILURE;
     }
 
@@ -64,6 +83,7 @@ int main(int argc, char **argv)
         result->average_turnaround_time, 
         result->total_run_time);
         
+    free(pcb);
     free(result);
 
     return EXIT_SUCCESS;
