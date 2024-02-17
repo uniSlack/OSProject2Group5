@@ -54,6 +54,38 @@ TEST (load_process_control_blocks, GoodRead) {
     EXPECT_FALSE(res == NULL);
 }
 
+TEST (load_process_control_blocks, pcbbinHasExpectedValues) {
+    const char *input_filename = "pcb.bin";
+
+    dyn_array* res = load_process_control_blocks(input_filename);
+    dyn_array_t* temp = NULL;
+    ASSERT_NE(res, temp);
+
+    EXPECT_EQ(dyn_array_size(res), 4);
+
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(res, 0))->remaining_burst_time, 15);
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(res, 0))->priority, 0);
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(res, 0))->arrival, 0);
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(res, 0))->started, false);
+
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(res, 1))->remaining_burst_time, 10);
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(res, 1))->priority, 0);
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(res, 1))->arrival, 1);
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(res, 1))->started, false);
+
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(res, 2))->remaining_burst_time, 5);
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(res, 2))->priority, 0);
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(res, 2))->arrival, 2);
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(res, 2))->started, false);
+
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(res, 3))->remaining_burst_time, 20);
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(res, 3))->priority, 0);
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(res, 3))->arrival, 3);
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(res, 3))->started, false);
+
+    dyn_array_destroy(res);
+}
+
 int main(int argc, char **argv) 
 {
     ::testing::InitGoogleTest(&argc, argv);
