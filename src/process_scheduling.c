@@ -124,12 +124,12 @@ dyn_array_t *load_process_control_blocks(const char *input_file)
     if(input_file){
         FILE* f = fopen(input_file, "rb");
         if(f){
-            int32_t numPCBs = 0;
-            if(fread(&numPCBs, sizeof(int32_t), 1, f) == 1) {                                   // get num pcbs
+            uint32_t numPCBs = 0;
+            if(fread(&numPCBs, sizeof(uint32_t), 1, f) == 1) {                                   // get num pcbs
                 dyn_array_t* da = dyn_array_create(numPCBs, sizeof(ProcessControlBlock_t), NULL);             // set up array
-                for(int i = 0; i < numPCBs; i++){                                               // for each expected pcb...
-                    int32_t buffer[3];
-                    if(fread(buffer, sizeof(int32_t), 3, f) != 3) {                                // read in pcb to heap var
+                for(uint32_t i = 0; i < numPCBs; i++){                                               // for each expected pcb...
+                    uint32_t buffer[3];
+                    if(fread(buffer, sizeof(uint32_t), 3, f) != 3) {                                // read in pcb to heap var
                         fclose(f);
                         dyn_array_destroy(da);
                         return NULL;                                                            // error clause

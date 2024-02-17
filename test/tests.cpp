@@ -21,28 +21,29 @@ TEST (load_process_control_blocks, GoodRead) {
     const char *input_filename = "testData.bin";
     FILE* f = fopen(input_filename, "wb");
 
-    int numPCBs = 5;
+    uint32_t numPCBs = 5;
     ProcessControlBlock_t pcb[numPCBs]; 
 
-    int32_t arr[1] = {numPCBs};
+    uint32_t arr[1] = {numPCBs};
     size_t wroteOut = fwrite(arr, sizeof(int32_t), 1, f);     
 
-    for(int i = 0; i < numPCBs; i++){
+    for(uint32_t i = 0; i < numPCBs; i++){
         pcb[i].remaining_burst_time = i;
         pcb[i].priority = i;
         pcb[i].arrival = i;
         pcb[i].started = false;
+        uint32_t outArray[3] = {pcb[i].remaining_burst_time, pcb[i].priority, pcb[i].arrival };
+        wroteOut += fwrite(outArray, sizeof(uint32_t), 3, f); 
     }
 
-    wroteOut += fwrite(pcb, sizeof(ProcessControlBlock_t), numPCBs, f); // writes out array of pcbs
     fclose(f);
 
     dyn_array_t* res = load_process_control_blocks(input_filename);
 
-    EXPECT_EQ(wroteOut, 1 + numPCBs);
+    EXPECT_EQ(wroteOut, 1 + (numPCBs * 3));
     EXPECT_EQ(dyn_array_empty(res), false);
     EXPECT_EQ(dyn_array_size(res), numPCBs);
-    for(int i = 0; i < numPCBs; i++){
+    for(uint32_t i = 0; i < numPCBs; i++){
         void *temp = dyn_array_at(res, i);
         EXPECT_FALSE(temp == NULL);
         ProcessControlBlock_t *tester = (ProcessControlBlock_t*)temp;
