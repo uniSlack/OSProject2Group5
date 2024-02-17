@@ -20,24 +20,44 @@ int main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    
-    dyn_array_t* da = load_process_control_blocks(argv[1]);
-    if(!da) {abort();} // replace with better bug catch
+    const char* pcb_file = argv[1];
+    const char* schedule_algorithm = argv[2];
 
-    // float avg_turnaround, sum_turnaround;
-    float avg_wait, sum_wait;
-    // unsigned long total_clock_time; // huh? Built in func maybe?
+    // long quantum = 0;
+    // if (argc > 3) 
+    // {
+    //     quantum = atol(argv[3]);
+    // }
 
-    for(size_t i = 0; i < dyn_array_size(da); i++){
-        ProcessControlBlock_t* pcb = dyn_array_at(da, i);
-        if(!pcb) {abort();} // replace with better bug catch
-        sum_wait += pcb->remaining_burst_time;
+    dyn_array_t *pcb = load_process_control_blocks(pcb_file);
+    ScheduleResult_t *result = malloc(sizeof(ScheduleResult_t));
+
+    if (strncmp(schedule_algorithm, FCFS, 4) == 0) 
+    {
+        if (!first_come_first_serve(pcb, result)) printf("First-come-first-serve failed!\n");
+    }
+    else if (strncmp(schedule_algorithm, P, 4) == 0) 
+    {
+        printf("Priority is not implemented yet!\n");
+    }
+    else if (strncmp(schedule_algorithm, RR, 4) == 0) 
+    {
+        printf("Round Robin is not implemented yet!\n");
+    }
+    else if (strncmp(schedule_algorithm, SJF, 4) == 0) 
+    {
+        printf("Shortest Job First is not implemented yet!\n");
+    }
+    else 
+    {
+        printf("Invalid schedule algorithm!\n");
+        printf("%s <pcb file> <schedule algorithm> [quantum]\n", argv[0]);
+        return EXIT_FAILURE;
     }
 
-    avg_wait = sum_wait / dyn_array_size(da);
-    printf("Average wait: %f", avg_wait);
+    printf("avg turnaround time: %f, avg waiting time: %f, total runtime: %lu\n", result->average_turnaround_time, result->average_waiting_time, result->total_run_time);
 
-    // abort();  // replace me with implementation.
+    free(result);
 
     return EXIT_SUCCESS;
 }
