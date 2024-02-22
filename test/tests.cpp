@@ -138,6 +138,47 @@ TEST (first_come_first_serve, NULL_queue) {
     EXPECT_FALSE(validFCFS);
 }
 
+TEST (shortest_job_first, NULL_queue) {
+    ScheduleResult_t *SJF_result = (ScheduleResult_t *)malloc(sizeof(ScheduleResult_t));
+    bool validSJF = shortest_job_first(NULL, SJF_result);
+    EXPECT_FALSE(validSJF);
+}
+
+TEST (shortest_job_first, LoadAndSort) {
+    const char *input_filename = "testData.bin";
+    FILE* f = fopen(input_filename, "wb");
+
+    int numPCBs = 10;
+    ProcessControlBlock_t pcb[numPCBs]; 
+
+    int32_t arr[1] = {numPCBs};
+    size_t wroteOut = fwrite(arr, sizeof(int32_t), 1, f);     
+
+    for(int i = 0; i < numPCBs; i++){
+        pcb[i].arrival = i;
+        pcb[i].priority = i;
+        pcb[i].remaining_burst_time = i;
+        pcb[i].started = false;
+    }
+
+    wroteOut += fwrite(pcb, sizeof(ProcessControlBlock_t), numPCBs, f); // writes out array of pcbs
+    fclose(f);
+
+    dyn_array_t *pcbs = load_process_control_blocks(input_filename);
+    ScheduleResult_t *SJF_result = (ScheduleResult_t *)malloc(sizeof(ScheduleResult_t));
+    bool validSJF = shortest_job_first(pcbs, SJF_result);
+
+    ASSERT_TRUE(validSJF);
+
+    for (int i = 1; i < numPCBs; i++) {
+        ProcessControlBlock_t *pcb_at_index = (ProcessControlBlock_t *)dyn_array_at(pcbs,i);
+        ProcessControlBlock_t *pcb_at_prev_index = (ProcessControlBlock_t *)dyn_array_at(pcbs,i-1);
+
+        // Burst time should be ordered from least to greatest
+        EXPECT_GE(pcb_at_index->remaining_burst_time, pcb_at_prev_index->remaining_burst_time);
+    }
+}
+
 TEST (round_robin, NULL_queue) {
     ScheduleResult_t * RR_result = (ScheduleResult_t *)malloc(sizeof(ScheduleResult_t));  
     bool validRR = first_come_first_serve(NULL, RR_result);
