@@ -66,10 +66,13 @@ int main(int argc, char **argv)
     }
     else if (strncmp(schedule_algorithm, SJF, 3) == 0) 
     {
-        printf("Shortest Job First is not implemented yet!\n");
-        dyn_array_destroy(pcb);
-        free(result);
-        return EXIT_FAILURE;
+        if (!shortest_job_first(pcb, result)) 
+        {
+            printf("Shortest Job First failed!\n");
+            dyn_array_destroy(pcb);
+            free(result);
+            return EXIT_FAILURE;
+        }
     }
     else 
     {
