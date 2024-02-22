@@ -23,11 +23,11 @@ int main(int argc, char **argv)
     const char* pcb_file = argv[1];
     const char* schedule_algorithm = argv[2];
 
-    // long quantum = 0;
-    // if (argc > 3) 
-    // {
-    //     sscanf(argv[3], "%ld", &quantum);
-    // }
+    long quantum = 0;
+    if (argc > 3) 
+    {
+        sscanf(argv[3], "%ld", &quantum);
+    }
 
     dyn_array_t *pcb = load_process_control_blocks(pcb_file);
     if (pcb == NULL)
@@ -57,10 +57,12 @@ int main(int argc, char **argv)
     }
     else if (strncmp(schedule_algorithm, RR, 2) == 0) 
     {
-        printf("Round Robin is not implemented yet!\n");
-        dyn_array_destroy(pcb);
-        free(result);
-        return EXIT_FAILURE;
+        if(!round_robin(pcb, result, quantum)){
+            printf("Round Robin failed!\n");
+            dyn_array_destroy(pcb);
+            free(result);
+            return EXIT_FAILURE;
+        }
     }
     else if (strncmp(schedule_algorithm, SJF, 3) == 0) 
     {

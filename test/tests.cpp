@@ -138,7 +138,13 @@ TEST (first_come_first_serve, NULL_queue) {
     EXPECT_FALSE(validFCFS);
 }
 
-TEST (round_robin, goodRun){
+TEST (round_robin, NULL_queue) {
+    ScheduleResult_t * RR_result = (ScheduleResult_t *)malloc(sizeof(ScheduleResult_t));  
+    bool validRR = first_come_first_serve(NULL, RR_result);
+    EXPECT_FALSE(validRR);
+}
+
+TEST (round_robin, pcbbinRunAndValCheck){
     const char *input_filename = "pcb.bin";
 
     dyn_array* pcbs = load_process_control_blocks(input_filename);
@@ -155,6 +161,8 @@ TEST (round_robin, goodRun){
     EXPECT_EQ(dyn_array_size(pcbs), 0);
 
     EXPECT_EQ(RR_result->total_run_time, 50);
+    EXPECT_EQ(RR_result->average_waiting_time, 7.5);
+    EXPECT_EQ(RR_result->average_turnaround_time, 33.75);
 }
 
 

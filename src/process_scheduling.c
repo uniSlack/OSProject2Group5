@@ -112,12 +112,13 @@ bool round_robin(dyn_array_t *ready_queue, ScheduleResult_t *result, size_t quan
             return false;
         }    
 
-        if(pcb->remaining_burst_time > quantum){
-            if(pcb->started == false) {
-                pcb->started = true;
-                result->average_waiting_time += result->total_run_time;     // if first run, make active and update wait time
-            }
-            
+        if(pcb->started == false) {
+            pcb->started = true;
+            result->average_waiting_time += result->total_run_time;     // if first run, make active and update wait time
+        }
+
+        if(pcb->remaining_burst_time > quantum){  
+                     
             pcb->remaining_burst_time -= quantum;       // run pcb
             
             result->total_run_time += quantum;          // account for run time
@@ -129,6 +130,7 @@ bool round_robin(dyn_array_t *ready_queue, ScheduleResult_t *result, size_t quan
         }
         else {
             result->total_run_time += pcb->remaining_burst_time;        // account for last bit of run time
+            pcb->remaining_burst_time = 0;                              // end process
             result->average_turnaround_time += result->total_run_time;  // update turnaround time once finished
         }
         free(pcb);
