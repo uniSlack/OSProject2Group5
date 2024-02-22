@@ -137,6 +137,27 @@ TEST (first_come_first_serve, NULL_queue) {
     bool validFCFS = first_come_first_serve(NULL, FCFS_result);
     EXPECT_FALSE(validFCFS);
 }
+
+TEST (round_robin, goodRun){
+    const char *input_filename = "pcb.bin";
+
+    dyn_array* pcbs = load_process_control_blocks(input_filename);
+    dyn_array_t* temp = NULL;
+    ASSERT_NE(pcbs, temp);
+
+    EXPECT_EQ(dyn_array_size(pcbs), 4);
+
+    ScheduleResult_t * RR_result = (ScheduleResult_t *)malloc(sizeof(ScheduleResult_t));  
+
+    bool res = round_robin(pcbs, RR_result, 5);
+
+    EXPECT_TRUE(res);
+    EXPECT_EQ(dyn_array_size(pcbs), 0);
+
+    EXPECT_EQ(RR_result->total_run_time, 50);
+}
+
+
 int main(int argc, char **argv) 
 {
     ::testing::InitGoogleTest(&argc, argv);

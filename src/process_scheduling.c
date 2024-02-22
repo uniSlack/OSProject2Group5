@@ -99,10 +99,44 @@ bool priority(dyn_array_t *ready_queue, ScheduleResult_t *result)
 // \return true if function ran successful else false for an error
 bool round_robin(dyn_array_t *ready_queue, ScheduleResult_t *result, size_t quantum) 
 {
-    UNUSED(ready_queue);
-    UNUSED(result);
-    UNUSED(quantum);
-    return false;
+    if(!(ready_queue && quantum > 0)) {return false;}   // check params
+
+    int initial_size = dyn_array_size(ready_queue);
+
+    if(initial_size <= 0) {return false;}       // Checks there are pcbs to run
+
+    while(dyn_array_size(ready_queue) > 0){
+        ProcessControlBlock_t *pcb = malloc(sizeof(ProcessControlBlock_t));
+        if(!dyn_array_extract_front(ready_queue, pcb)) { // pop first index
+            free(pcb);
+            return false;
+        }    
+
+        if(pcb->remaining_burst_time > quantum){
+            if(pcb->started == false) {
+                pcb->started = true;
+                result->average_waiting_time += result->total_run_time;     // if first run, make active and update wait time
+            }
+            
+            pcb->remaining_burst_time -= quantum;       // run pcb
+            
+            result->total_run_time += quantum;          // account for run time
+
+            if (!dyn_array_push_back(ready_queue, pcb)) { // push to back of array
+                free(pcb);
+                return false;
+            }     
+        }
+        else {
+            result->total_run_time += pcb->remaining_burst_time;        // account for last bit of run time
+            result->average_turnaround_time += result->total_run_time;  // update turnaround time once finished
+        }
+        free(pcb);
+    }
+
+    result->average_turnaround_time /= initial_size;
+    result->average_waiting_time /= initial_size;   // get averages from totals
+    return true;
 }
 
 
