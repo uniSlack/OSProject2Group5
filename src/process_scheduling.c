@@ -201,32 +201,50 @@ bool round_robin(dyn_array_t *ready_queue, ScheduleResult_t *result, size_t quan
 // \return a populated dyn_array of ProcessControlBlocks if function ran successful else NULL for an error
 dyn_array_t *load_process_control_blocks(const char *input_file) 
 {
-    if(input_file){
-        FILE* f = fopen(input_file, "rb");
-        if(f){
-            uint32_t numPCBs = 0;
-            if(fread(&numPCBs, sizeof(uint32_t), 1, f) == 1) {                                   // get num pcbs
-                dyn_array_t* da = dyn_array_create(numPCBs, sizeof(ProcessControlBlock_t), NULL);             // set up array
-                for(uint32_t i = 0; i < numPCBs; i++){                                               // for each expected pcb...
-                    uint32_t buffer[3];
-                    if(fread(buffer, sizeof(uint32_t), 3, f) != 3) {                                // read in pcb to heap var
-                        fclose(f);
-                        dyn_array_destroy(da);
-                        return NULL;                                                            // error clause
-                    }    
-                    ProcessControlBlock_t* pcb = malloc(sizeof(ProcessControlBlock_t));         // Create heap var
-                    pcb->remaining_burst_time = buffer[0];
-                    pcb->priority = buffer[1];
-                    pcb->arrival = buffer[2];
-                    pcb->started = false;
-                    dyn_array_push_back(da, pcb);                                              // else save
-                }
-                fclose(f);
-                return da;
-            }
-        }
+    if(input_file == NULL) return NULL;
+
+    FILE* f = fopen(input_file, "rb");
+    if(f == NULL) return NULL;
+
+    uint32_t numPCBs = 0;
+    if (fread(&numPCBs, sizeof(uint32_t), 1, f) != 1) // get num pcbs
+    {
+        // Reading in number failed...
+        fclose(f);
+        return NULL;
     }
-    return NULL;
+
+    dyn_array_t* da = dyn_array_create(numPCBs, sizeof(ProcessControlBlock_t), NULL);             // set up array
+    if (da == NULL) 
+    {
+        // array setup failed...
+        fclose(f);
+        return NULL;
+    }
+    
+    for(uint32_t i = 0; i < numPCBs; i++)   // for each expected pcb...
+    {      
+        uint32_t buffer[3];
+
+        if(fread(buffer, sizeof(uint32_t), 3, f) != 3)  // read in pcb to heap var
+        {
+            fclose(f);
+            dyn_array_destroy(da);
+            return NULL;                                                            // error clause
+        }    
+
+        ProcessControlBlock_t* pcb = malloc(sizeof(ProcessControlBlock_t));         // Create heap var
+
+        pcb->remaining_burst_time = buffer[0];
+        pcb->priority = buffer[1];
+        pcb->arrival = buffer[2];
+        pcb->started = false;
+
+        dyn_array_push_back(da, pcb);                                              // save
+    }
+
+    fclose(f);
+    return da;
 }
 
 // Runs the Shortest Remaining Time First Process Scheduling algorithm over the incoming ready_queue

@@ -142,6 +142,8 @@ TEST (shortest_job_first, NULL_queue) {
     ScheduleResult_t *SJF_result = (ScheduleResult_t *)malloc(sizeof(ScheduleResult_t));
     bool validSJF = shortest_job_first(NULL, SJF_result);
     EXPECT_FALSE(validSJF);
+
+    free(SJF_result);
 }
 
 TEST (shortest_job_first, LoadAndSort) {
@@ -177,6 +179,10 @@ TEST (shortest_job_first, LoadAndSort) {
         // Burst time should be ordered from least to greatest
         EXPECT_GE(pcb_at_index->remaining_burst_time, pcb_at_prev_index->remaining_burst_time);
     }
+
+    // Clean up
+    dyn_array_destroy(pcbs);
+    free(SJF_result);
 }
 
 TEST (round_robin, NULL_queue) {
