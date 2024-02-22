@@ -165,7 +165,6 @@ TEST (shortest_job_first, LoadAndSort) {
         wroteOut += fwrite(outArray, sizeof(uint32_t), 3, f); 
     }
 
-    wroteOut += fwrite(pcb, sizeof(ProcessControlBlock_t), numPCBs, f); // writes out array of pcbs
     fclose(f);
 
     dyn_array_t *pcbs = load_process_control_blocks(input_filename);
