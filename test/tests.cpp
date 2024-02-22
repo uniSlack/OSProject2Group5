@@ -157,10 +157,12 @@ TEST (shortest_job_first, LoadAndSort) {
     size_t wroteOut = fwrite(arr, sizeof(int32_t), 1, f);     
 
     for(int i = 0; i < numPCBs; i++){
-        pcb[i].arrival = i;
-        pcb[i].priority = i;
         pcb[i].remaining_burst_time = i;
+        pcb[i].priority = i;
+        pcb[i].arrival = i;
         pcb[i].started = false;
+        uint32_t outArray[3] = {pcb[i].remaining_burst_time, pcb[i].priority, pcb[i].arrival };
+        wroteOut += fwrite(outArray, sizeof(uint32_t), 3, f); 
     }
 
     wroteOut += fwrite(pcb, sizeof(ProcessControlBlock_t), numPCBs, f); // writes out array of pcbs
