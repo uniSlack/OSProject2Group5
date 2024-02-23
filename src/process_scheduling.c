@@ -101,6 +101,10 @@ bool round_robin(dyn_array_t *ready_queue, ScheduleResult_t *result, size_t quan
 {
     if(!(ready_queue && quantum > 0)) {return false;}   // check params
 
+    result->average_turnaround_time = (float)0;
+    result->average_waiting_time = (float)0;
+    result->total_run_time = 0;                 // initializes results
+    
     int initial_size = dyn_array_size(ready_queue);
 
     if(initial_size <= 0) {return false;}       // Checks there are pcbs to run
@@ -130,14 +134,14 @@ bool round_robin(dyn_array_t *ready_queue, ScheduleResult_t *result, size_t quan
         }
         else {
             result->total_run_time += pcb->remaining_burst_time;        // account for last bit of run time
-            pcb->remaining_burst_time = 0;                              // end process
+            pcb->remaining_burst_time = 0;                              // finish process
             result->average_turnaround_time += result->total_run_time;  // update turnaround time once finished
         }
         free(pcb);
     }
 
-    result->average_turnaround_time /= initial_size;
-    result->average_waiting_time /= initial_size;   // get averages from totals
+    result->average_turnaround_time /= (float)initial_size;
+    result->average_waiting_time /= (float)initial_size;   // get averages from totals
     return true;
 }
 
