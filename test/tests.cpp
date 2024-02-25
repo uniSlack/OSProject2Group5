@@ -53,6 +53,9 @@ TEST (load_process_control_blocks, GoodRead) {
         EXPECT_EQ(tester->started, pcb[i].started);
     }
     EXPECT_FALSE(res == NULL);
+
+    // clean up
+    dyn_array_destroy(res);
 }
 
 TEST (load_process_control_blocks, pcbbinHasExpectedValues) {
@@ -130,12 +133,19 @@ TEST (first_come_first_serve, LoadAndSort) {
     EXPECT_EQ(wroteOut, 1 + numPCBs);
     EXPECT_EQ(dyn_array_empty(pcbs), false);
     EXPECT_FALSE(pcbs == NULL);
+
+    // Clean up
+    dyn_array_destroy(pcbs);
+    free(FCFS_result);
 }
 
 TEST (first_come_first_serve, NULL_queue) {
     ScheduleResult_t * FCFS_result = (ScheduleResult_t *)malloc(sizeof(ScheduleResult_t));  
     bool validFCFS = first_come_first_serve(NULL, FCFS_result);
     EXPECT_FALSE(validFCFS);
+
+    // Clean up
+    free(FCFS_result);
 }
 
 TEST (shortest_job_first, NULL_queue) {
@@ -143,6 +153,7 @@ TEST (shortest_job_first, NULL_queue) {
     bool validSJF = shortest_job_first(NULL, SJF_result);
     EXPECT_FALSE(validSJF);
 
+    // Clean up
     free(SJF_result);
 }
 
@@ -190,6 +201,9 @@ TEST (round_robin, NULL_queue) {
     ScheduleResult_t * RR_result = (ScheduleResult_t *)malloc(sizeof(ScheduleResult_t));  
     bool validRR = first_come_first_serve(NULL, RR_result);
     EXPECT_FALSE(validRR);
+
+    // Clean up
+    free(RR_result);
 }
 
 TEST (round_robin, pcbbinRunAndValCheck){
@@ -211,6 +225,10 @@ TEST (round_robin, pcbbinRunAndValCheck){
     EXPECT_EQ(RR_result->total_run_time, 50);
     EXPECT_EQ(RR_result->average_waiting_time, 7.5);
     EXPECT_EQ(RR_result->average_turnaround_time, 33.75);
+
+    // Clean up
+    dyn_array_destroy(pcbs);
+    free(RR_result);
 }
 
 TEST (shortest_remaining_time_first, NULL_queue) {
@@ -218,6 +236,7 @@ TEST (shortest_remaining_time_first, NULL_queue) {
     bool validRR = first_come_first_serve(NULL, SRTF_result);
     EXPECT_FALSE(validRR);
 
+    // Clean up
     free(SRTF_result);
 }
 
