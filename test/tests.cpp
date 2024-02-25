@@ -213,6 +213,49 @@ TEST (round_robin, pcbbinRunAndValCheck){
     EXPECT_EQ(RR_result->average_turnaround_time, 33.75);
 }
 
+TEST (shortest_remaining_time_first, NULL_queue) {
+    ScheduleResult_t * SRTF_result = (ScheduleResult_t *)malloc(sizeof(ScheduleResult_t));  
+    bool validRR = first_come_first_serve(NULL, SRTF_result);
+    EXPECT_FALSE(validRR);
+
+    free(SRTF_result);
+}
+
+TEST (shortest_remaining_time_first, values_from_slides_is_correct) {
+    const char *input_filename = "testData.bin";
+    FILE* f = fopen(input_filename, "wb");
+
+    int numPCBs = 4;
+
+    int32_t arr[1] = {numPCBs};
+    size_t wroteOut = fwrite(arr, sizeof(int32_t), 1, f);     
+
+    uint32_t outArray[numPCBs*3] = { 
+        8, 0, 0,
+        4, 0, 1,
+        9, 0, 2,
+        5, 0, 3
+    };
+
+    wroteOut += fwrite(outArray, sizeof(uint32_t), numPCBs*3, f); 
+
+    fclose(f);
+
+    dyn_array_t *pcbs = load_process_control_blocks(input_filename);
+    ScheduleResult_t *SRTF_result = (ScheduleResult_t *)malloc(sizeof(ScheduleResult_t));
+    bool result = shortest_remaining_time_first(pcbs, SRTF_result);
+
+    EXPECT_TRUE(result);
+
+    EXPECT_EQ(SRTF_result->total_run_time, 26);
+    EXPECT_FLOAT_EQ(SRTF_result->average_waiting_time, 6.5);
+    EXPECT_FLOAT_EQ(SRTF_result->average_turnaround_time, 13);
+
+    // Clean up
+    dyn_array_destroy(pcbs);
+    free(SRTF_result);
+}
+
 
 int main(int argc, char **argv) 
 {
