@@ -5,7 +5,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/build/analysis.exe",
-            "args": ["pcb.bin", "RR", "5"],
+            "args": ["pcb.bin", "SRTF"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],

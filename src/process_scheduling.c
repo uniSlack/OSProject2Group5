@@ -254,6 +254,82 @@ dyn_array_t *load_process_control_blocks(const char *input_file)
     return da;
 }
 
+void find_waiting_time(dyn_array_t *ready_queue, int *waiting_time, unsigned long *run_time)
+{
+    // https://www.geeksforgeeks.org/shortest-remaining-time-first-preemptive-sjf-scheduling-algorithm/
+    // SRTF is confusing...
+
+    size_t size = dyn_array_size(ready_queue);
+    unsigned long remaining_times[size];
+    
+    // copy burst times
+    for (size_t i = 0; i < size; i++)
+    {
+        ProcessControlBlock_t *pcb_t = dyn_array_at(ready_queue, i);
+        remaining_times[i] = pcb_t->remaining_burst_time;
+    }
+
+    size_t completed = 0;
+    unsigned long time = 0;
+    unsigned long minm = 10000000;
+    unsigned long shortest = 0;
+    unsigned long finish_time = 0;
+    int check = 0;
+
+    while (completed != size)
+    {
+        for (size_t i = 0; i < size; i++)
+        {
+            ProcessControlBlock_t *pcb_t = dyn_array_at(ready_queue, i);
+            if (pcb_t->arrival <= time && remaining_times[i] < minm && remaining_times[i] > 0)
+            {
+                minm = remaining_times[i];
+                shortest = i;
+                check = 1;
+            }
+        } // end for loop
+
+        if (check == 0)
+        {
+            time++;
+            continue;
+        }
+
+        // Reduce remaining time by one
+        remaining_times[shortest] = remaining_times[shortest] - 1;
+
+        // Update minimum
+        minm = remaining_times[shortest];
+        if (minm == 0)
+        {
+            minm = 10000000;
+        }
+
+        // Process is completely executed
+        if (remaining_times[shortest] == 0)
+        {
+            completed++;
+            check = 0;
+
+            // Find finish time
+            finish_time = time + 1;
+
+            // Calculate waiting time
+            ProcessControlBlock_t *shortest_pcb = dyn_array_at(ready_queue, shortest);
+            waiting_time[shortest] = finish_time - shortest_pcb->remaining_burst_time - shortest_pcb->arrival;
+
+            if (waiting_time[shortest] < 0)
+            {
+                waiting_time[shortest] = 0;
+            }
+        }
+        
+        time++;
+    }
+
+    *run_time = time;
+}
+
 // Runs the Shortest Remaining Time First Process Scheduling algorithm over the incoming ready_queue
 // \param ready queue a dyn_array of type ProcessControlBlock_t that contain be up to N elements
 // \param result used for shortest job first stat tracking \ref ScheduleResult_t
@@ -265,26 +341,44 @@ bool shortest_remaining_time_first(dyn_array_t *ready_queue, ScheduleResult_t *r
     result->average_waiting_time = 0;
     result->average_turnaround_time = 0;
     result->total_run_time = 0;
-    unsigned long current_time = 0;
+    //unsigned long current_time = 0;
 
-    //if sort failed
-    if (!dyn_array_sort(ready_queue, compare_pcb_burst))  return false;
+    size_t size = dyn_array_size(ready_queue);
+    int waiting_time[size];
+    find_waiting_time(ready_queue, waiting_time, &(result->total_run_time));
 
-    // Iterate through the processes in the pcbs and updates the result
-    for (size_t i = 0; i < dyn_array_size(ready_queue); i++) {
-        ProcessControlBlock_t *pcb_t = dyn_array_at(ready_queue, i); //Grab queue at index i
+    for (size_t i = 0; i < size; i++)
+    {
+        ProcessControlBlock_t *pcb_t = dyn_array_at(ready_queue, i);
 
-        result->average_waiting_time += current_time;
-        result->average_turnaround_time += current_time + pcb_t->remaining_burst_time; // Calculates the total turnaround time for the current process
+        result->average_waiting_time += (unsigned long)waiting_time[i];
+        result->average_turnaround_time += pcb_t->remaining_burst_time + (unsigned long)waiting_time[i];
 
-        current_time += pcb_t->remaining_burst_time;    // Update current time to be the total run time
         pcb_t->started = true;
     }
 
-    // Calculate averages based on the total number of pcbs
-    result->average_waiting_time /= dyn_array_size(ready_queue);
-    result->average_turnaround_time /= dyn_array_size(ready_queue);
-    result->total_run_time = current_time;
+
+    result->average_waiting_time /= size;
+    result->average_turnaround_time /= size;
+    
+    // //if sort failed
+    // if (!dyn_array_sort(ready_queue, compare_pcb_burst))  return false;
+
+    // // Iterate through the processes in the pcbs and updates the result
+    // for (size_t i = 0; i < dyn_array_size(ready_queue); i++) {
+    //     ProcessControlBlock_t *pcb_t = dyn_array_at(ready_queue, i); //Grab queue at index i
+
+    //     result->average_waiting_time += current_time;
+    //     result->average_turnaround_time += current_time + pcb_t->remaining_burst_time; // Calculates the total turnaround time for the current process
+
+    //     current_time += pcb_t->remaining_burst_time;    // Update current time to be the total run time
+    //     pcb_t->started = true;
+    // }
+
+    // // Calculate averages based on the total number of pcbs
+    // result->average_waiting_time /= dyn_array_size(ready_queue);
+    // result->average_turnaround_time /= dyn_array_size(ready_queue);
+    // result->total_run_time = current_time;
 
     return true;
 }
