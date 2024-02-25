@@ -32,6 +32,7 @@ int compare_pcb_arrival(const void *a, const void *b) {
 }
 
 /// Comparator function for sorting pcbs based on remaining burst time
+// For SRTF
 int compare_pcb_burst(const void *a, const void *b) {
     const ProcessControlBlock_t *pcb_first = (const ProcessControlBlock_t *)a; //cast void pointers
     const ProcessControlBlock_t *pcb_second = (const ProcessControlBlock_t *)b;
@@ -44,11 +45,12 @@ int compare_pcb_burst(const void *a, const void *b) {
     } 
 }
 
+// For SJF
 int compare_burst_time(const void *a, const void *b) {
     const ProcessControlBlock_t *pcb_first = (const ProcessControlBlock_t *)a; //cast void pointers
     const ProcessControlBlock_t *pcb_second = (const ProcessControlBlock_t *)b;
 
-    if (pcb_first->remaining_burst_time > pcb_second->remaining_burst_time) {    //pcb1 arrives after pcb2
+    if (pcb_first->remaining_burst_time > pcb_second->remaining_burst_time) {
         return 1;
     }
      else {

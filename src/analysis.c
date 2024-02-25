@@ -8,6 +8,7 @@
 #define P "P"
 #define RR "RR"
 #define SJF "SJF"
+#define SRTF "SRTF"
 
 // Add and comment your analysis code in this function.
 // THIS IS NOT FINISHED.
@@ -69,6 +70,16 @@ int main(int argc, char **argv)
         if (!shortest_job_first(pcb, result)) 
         {
             printf("Shortest Job First failed!\n");
+            dyn_array_destroy(pcb);
+            free(result);
+            return EXIT_FAILURE;
+        }
+    }
+    else if (strncmp(schedule_algorithm, SRTF, 4) == 0)
+    {
+        if (!shortest_remaining_time_first(pcb, result))
+        {
+            printf("Shortest Remaining Time First failed!\n");
             dyn_array_destroy(pcb);
             free(result);
             return EXIT_FAILURE;
