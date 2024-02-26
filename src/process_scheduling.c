@@ -44,7 +44,8 @@ int compare_pcb_burst(const void *a, const void *b) {
     } 
 }
 
-// Runs the First Come First Served Process Scheduling algorithm over the incoming ready_queue
+    // Runs the First Come First Served Process Scheduling algorithm over the incoming ready_queue  
+    // pg 209 for test cases
     // \param ready queue a dyn_array of type ProcessControlBlock_t that contain be up to N elements
     // \param result used for first come first served stat tracking \ref ScheduleResult_t
     // \return true if function ran successful else false for an error
@@ -64,8 +65,8 @@ bool first_come_first_serve(dyn_array_t *ready_queue, ScheduleResult_t *result)
     for (size_t i = 0; i < dyn_array_size(ready_queue); i++) {
         ProcessControlBlock_t *pcb_t = dyn_array_at(ready_queue, i); //Grab queue at index i
 
-        result->average_waiting_time += current_time;
-        result->average_turnaround_time += current_time + pcb_t->remaining_burst_time; // Calculates the total turnaround time for the current process
+        result->average_waiting_time = current_time;
+        result->average_turnaround_time = current_time + pcb_t->remaining_burst_time; // Calculates the total turnaround time for the current process
         
         current_time += pcb_t->remaining_burst_time;    // Update current time to be the total run time
         pcb_t->started = true;
@@ -85,9 +86,33 @@ bool first_come_first_serve(dyn_array_t *ready_queue, ScheduleResult_t *result)
     // \return true if function ran successful else false for an error
 bool shortest_job_first(dyn_array_t *ready_queue, ScheduleResult_t *result) 
 {
-    UNUSED(ready_queue);
-    UNUSED(result);
-    return false;   
+    if (ready_queue == NULL || dyn_array_empty(ready_queue)) return false; //Check for bad data
+
+    result->average_waiting_time = 0;
+    result->average_turnaround_time = 0;
+    result->total_run_time = 0;
+    unsigned long current_time = 0;
+
+    //if sort failed
+    if (!dyn_array_sort(ready_queue, compare_pcb_burst))  return false;
+
+    // Iterate through the processes in the pcbs and updates the result
+    for (size_t i = 0; i < dyn_array_size(ready_queue); i++) {
+        ProcessControlBlock_t *pcb_t = dyn_array_at(ready_queue, i); //Grab queue at index i
+
+        result->average_waiting_time += current_time;
+        result->average_turnaround_time = current_time + pcb_t->remaining_burst_time; // Calculates the total turnaround time for the current process
+
+        current_time += pcb_t->remaining_burst_time;    // Update current time to be the total run time
+        pcb_t->started = true;
+    }
+
+    // Calculate averages based on the total number of pcbs
+    result->average_waiting_time /= dyn_array_size(ready_queue);
+    result->average_turnaround_time /= dyn_array_size(ready_queue);
+    result->total_run_time = current_time;
+
+    return true; 
 }
 
 // Runs the Priority algorithm over the incoming ready_queue
@@ -174,12 +199,16 @@ bool shortest_remaining_time_first(dyn_array_t *ready_queue, ScheduleResult_t *r
     //if sort failed
     if (!dyn_array_sort(ready_queue, compare_pcb_burst))  return false;
 
+    while(dyn_array_size(ready_queue) > 0){
+         
+    }
+
     // Iterate through the processes in the pcbs and updates the result
     for (size_t i = 0; i < dyn_array_size(ready_queue); i++) {
         ProcessControlBlock_t *pcb_t = dyn_array_at(ready_queue, i); //Grab queue at index i
 
         result->average_waiting_time += current_time;
-        result->average_turnaround_time += current_time + pcb_t->remaining_burst_time; // Calculates the total turnaround time for the current process
+        result->average_turnaround_time = current_time + pcb_t->remaining_burst_time; // Calculates the total turnaround time for the current process
 
         current_time += pcb_t->remaining_burst_time;    // Update current time to be the total run time
         pcb_t->started = true;

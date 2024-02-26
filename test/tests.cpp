@@ -99,12 +99,12 @@ TEST (first_come_first_serve, LoadAndSort) {
 
     for(int i = 0; i < numPCBs; i++){
         pcb[i].arrival = (i%3==0) ? i+2 : i;
-        pcb[i].priority = i;
-        pcb[i].remaining_burst_time = i;
+        pcb[i].arrival = i;
         pcb[i].started = false;
+        uint32_t outArray[3] = {pcb[i].remaining_burst_time, pcb[i].priority, pcb[i].arrival };
+        wroteOut += fwrite(outArray, sizeof(uint32_t), 3, f); 
     }
 
-    wroteOut += fwrite(pcb, sizeof(ProcessControlBlock_t), numPCBs, f); // writes out array of pcbs
     fclose(f);
 
     dyn_array_t* pcbs = load_process_control_blocks(input_filename);
@@ -127,7 +127,7 @@ TEST (first_come_first_serve, LoadAndSort) {
 
     EXPECT_TRUE(validFCFS);
     EXPECT_EQ(FCFS_result->total_run_time, totalTime);
-    EXPECT_EQ(wroteOut, 1 + numPCBs);
+    EXPECT_EQ(wroteOut, 1 + (numPCBs * 3));
     EXPECT_EQ(dyn_array_empty(pcbs), false);
     EXPECT_FALSE(pcbs == NULL);
 }
@@ -137,6 +137,93 @@ TEST (first_come_first_serve, NULL_queue) {
     bool validFCFS = first_come_first_serve(NULL, FCFS_result);
     EXPECT_FALSE(validFCFS);
 }
+
+TEST (shortest_job_first, GOOD_TEST) {
+    const char *input_filename = "testData.bin";
+    FILE* f = fopen(input_filename, "wb");
+
+    int numPCBs = 4;
+    ProcessControlBlock_t pcb[numPCBs]; 
+
+    int32_t arr[1] = {numPCBs};
+    size_t wroteOut = fwrite(arr, sizeof(int32_t), 1, f);     
+
+    //Initialize
+    for(int i = 0; i < numPCBs; i++){
+        pcb[i].priority = i;
+        pcb[i].arrival = i;
+        pcb[i].remaining_burst_time = i;
+        pcb[i].started = false;
+    }
+
+    //example pulled from the book
+    pcb[0].remaining_burst_time = (uint32_t)8;
+    pcb[1].remaining_burst_time = (uint32_t)4;
+    pcb[2].remaining_burst_time = (uint32_t)9;
+    pcb[3].remaining_burst_time = (uint32_t)5;
+
+    for(int i = 0; i < numPCBs; i++){
+        uint32_t outArray[3] = {pcb[i].remaining_burst_time, pcb[i].priority, pcb[i].arrival };
+        wroteOut += fwrite(outArray, sizeof(uint32_t), 3, f); 
+    }
+
+    fclose(f);
+
+    dyn_array_t* pcbs = load_process_control_blocks(input_filename);
+    ScheduleResult_t * FCFS_result = (ScheduleResult_t *)malloc(sizeof(ScheduleResult_t));  
+
+    //sort and get results from FCFS
+    bool validSRTF = shortest_job_first(pcbs, FCFS_result);
+    
+    // Initialize time since we dont add 0
+    int totalTime = ((ProcessControlBlock_t *)dyn_array_at(pcbs,0))->remaining_burst_time; 
+
+    //loop through the pcbs to make sure they are sorted and get total time
+    for(int i = 1; i < numPCBs; i++){
+        ProcessControlBlock_t *pcb_at_index = (ProcessControlBlock_t *)dyn_array_at(pcbs,i);
+        ProcessControlBlock_t *pcb_at_prev_index = (ProcessControlBlock_t *)dyn_array_at(pcbs,i-1);
+
+        totalTime += pcb_at_index->remaining_burst_time;
+
+        //If sorted worked then all arrival times should go from lowest -> highest
+        EXPECT_GE(pcb_at_index->remaining_burst_time, pcb_at_prev_index->remaining_burst_time);
+    }
+    EXPECT_FALSE(pcbs == NULL);
+
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(pcbs, 0))->remaining_burst_time, 4);
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(pcbs, 0))->priority, 1);
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(pcbs, 0))->arrival, 1);
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(pcbs, 0))->started, true);
+
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(pcbs, 1))->remaining_burst_time, 5);
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(pcbs, 1))->priority, 3);
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(pcbs, 1))->arrival, 3);
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(pcbs, 1))->started, true);
+
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(pcbs, 2))->remaining_burst_time, 8);
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(pcbs, 2))->priority, 0);
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(pcbs, 2))->arrival, 0);
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(pcbs, 2))->started, true);
+
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(pcbs, 3))->remaining_burst_time, 9);
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(pcbs, 3))->priority, 2);
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(pcbs, 3))->arrival, 2);
+    EXPECT_EQ(((ProcessControlBlock_t*)dyn_array_at(pcbs, 3))->started, true);
+
+
+    EXPECT_FLOAT_EQ(FCFS_result->average_turnaround_time , 6.5);
+    EXPECT_TRUE(validSRTF);
+    EXPECT_EQ(FCFS_result->total_run_time, totalTime);
+    EXPECT_EQ(wroteOut, 1 + (numPCBs * 3));
+    EXPECT_EQ(dyn_array_empty(pcbs), false);
+}
+
+TEST (shortest_job_first, NULL_queue) {
+    ScheduleResult_t * FCFS_result = (ScheduleResult_t *)malloc(sizeof(ScheduleResult_t));  
+    bool validFCFS = shortest_job_first(NULL, FCFS_result);
+    EXPECT_FALSE(validFCFS);
+}
+
 int main(int argc, char **argv) 
 {
     ::testing::InitGoogleTest(&argc, argv);
